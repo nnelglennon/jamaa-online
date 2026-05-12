@@ -57,15 +57,12 @@ export default async function Header() {
               alt="Jamaa"
               className="h-12 w-auto max-w-[180px] object-contain"
             />
-            <span
-              className="text-base font-extrabold tracking-tight"
-              style={{ color: "var(--brand)" }}
-            >
+            <span className="text-base font-extrabold tracking-tight" style={{ color: "var(--brand)" }}>
               JAMAA Online
             </span>
           </Link>
 
-          {/* ENCLOSED "Deliver to" pill */}
+          {/* Enclosed Deliver-to pill */}
           <div className="mt-2 inline-flex max-w-full items-center gap-2 rounded-full border bg-slate-50 px-3 py-1 text-xs text-slate-700">
             <span className="truncate">
               Deliver to: <b className="text-slate-900">{town || "Set location"}</b>
@@ -82,6 +79,7 @@ export default async function Header() {
           </div>
         </div>
 
+        {/* Desktop search */}
         <form action="/search" className="hidden w-full max-w-xl md:block">
           <input
             name="q"
@@ -90,7 +88,12 @@ export default async function Header() {
           />
         </form>
 
+        {/* Right nav */}
         <nav className="flex items-center gap-4">
+          <Link href="/promotions" className="text-sm underline">
+            Promos
+          </Link>
+
           <Link href="/search" className="text-sm underline md:hidden">
             Search
           </Link>
@@ -99,12 +102,8 @@ export default async function Header() {
 
           {!loggedIn ? (
             <>
-              <Link href="/login" className="text-sm underline">
-                Login
-              </Link>
-              <Link href="/signup" className="text-sm underline">
-                Sign up
-              </Link>
+              <Link href="/login" className="text-sm underline">Login</Link>
+              <Link href="/signup" className="text-sm underline">Sign up</Link>
             </>
           ) : (
             <>
@@ -130,6 +129,7 @@ export default async function Header() {
         </nav>
       </div>
 
+      {/* Mobile search */}
       <div className="mx-auto max-w-6xl px-4 pb-3 md:hidden">
         <form action="/search">
           <input
