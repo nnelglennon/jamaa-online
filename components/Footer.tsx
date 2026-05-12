@@ -1,7 +1,8 @@
-import Link from "next/link";
-
 export default function Footer() {
   const email = process.env.SHOP_CONTACT_EMAIL || "info@example.com";
+
+  const payPill =
+    "inline-flex items-center rounded-full border bg-white px-3 py-1 text-xs font-semibold text-slate-700";
 
   return (
     <footer className="mt-10 border-t bg-white">
@@ -9,35 +10,34 @@ export default function Footer() {
         <div className="grid gap-6 md:grid-cols-3">
           <div>
             <div className="text-sm font-extrabold" style={{ color: "var(--brand)" }}>
-              JAMAA Online
+              Contact
             </div>
             <div className="mt-2 text-sm text-slate-600">
-              Contact email: <b className="text-slate-900">{email}</b>
+              Email: <b className="text-slate-900">{email}</b>
+            </div>
+          </div>
+
+          <div>
+            <div className="text-sm font-extrabold" style={{ color: "var(--brand)" }}>
+              Payments
+            </div>
+            <div className="mt-2 flex flex-wrap gap-2">
+              <span className={payPill}>M‑Pesa</span>
+              <span className={payPill}>Airtel Money</span>
+              <span className={payPill}>Visa</span>
+              <span className={payPill}>Mastercard</span>
             </div>
             <div className="mt-2 text-xs text-slate-500">
-              © {new Date().getFullYear()} Jamaa Supermarket
+              Payment options shown for demo; live gateway can be connected.
             </div>
           </div>
 
           <div>
             <div className="text-sm font-extrabold" style={{ color: "var(--brand)" }}>
-              Links
+              About
             </div>
-            <div className="mt-2 grid gap-2 text-sm">
-              <Link className="underline" href="/promotions">Promotions</Link>
-              <Link className="underline" href="/orders">Orders</Link>
-              <Link className="underline" href="/cart">Cart</Link>
-            </div>
-          </div>
-
-          <div>
-            <div className="text-sm font-extrabold" style={{ color: "var(--brand)" }}>
-              Account
-            </div>
-            <div className="mt-2 grid gap-2 text-sm">
-              <Link className="underline" href="/login">Login</Link>
-              <Link className="underline" href="/signup">Sign up</Link>
-              <Link className="underline" href="/logout">Logout</Link>
+            <div className="mt-2 text-sm text-slate-600">
+              Online ordering with delivery routing by location and stock checks per branch.
             </div>
           </div>
         </div>

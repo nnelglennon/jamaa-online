@@ -1,7 +1,7 @@
-import Link from "next/link";
 import { cookies } from "next/headers";
 import CartBadge from "./CartBadge";
 import DeliverToModal from "./DeliverToModal";
+import LinkWithDots from "./LinkWithDots";
 import { createClient } from "../lib/supabase/server";
 
 import {
@@ -28,9 +28,7 @@ export default async function Header() {
   const town = cookieStore.get("delivery_town")?.value ?? "";
 
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { data: { user } } = await supabase.auth.getUser();
 
   const loggedIn = !!user;
   const badgeInitial = initialFromEmail(user?.email);
@@ -50,19 +48,17 @@ export default async function Header() {
   return (
     <header className="sticky top-0 z-50 border-b bg-white/95 backdrop-blur">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-2">
+        {/* Left: logo only (no JAMAA Online text) */}
         <div className="min-w-0">
-          <Link href="/" className="flex items-center gap-2">
+          <a href="/" className="flex items-center gap-2">
             <img
               src="/jamaa-logo.png"
               alt="Jamaa"
               className="h-12 w-auto max-w-[180px] object-contain"
             />
-            <span className="text-base font-extrabold tracking-tight" style={{ color: "var(--brand)" }}>
-              JAMAA Online
-            </span>
-          </Link>
+          </a>
 
-          {/* Enclosed Deliver-to pill */}
+          {/* Deliver-to pill */}
           <div className="mt-2 inline-flex max-w-full items-center gap-2 rounded-full border bg-slate-50 px-3 py-1 text-xs text-slate-700">
             <span className="truncate">
               Deliver to: <b className="text-slate-900">{town || "Set location"}</b>
@@ -89,41 +85,59 @@ export default async function Header() {
         </form>
 
         {/* Right nav */}
-        <nav className="flex items-center gap-4">
-          <Link href="/promotions" className="text-sm underline">
+        <nav className="flex items-center gap-3">
+          {/* Home badge */}
+          <LinkWithDots
+            href="/"
+            className="rounded-full border bg-white px-3 py-1 text-sm font-semibold"
+          >
+            Home
+          </LinkWithDots>
+
+          <LinkWithDots href="/promotions" className="text-sm underline">
             Promos
-          </Link>
+          </LinkWithDots>
 
-          <Link href="/search" className="text-sm underline md:hidden">
+          <LinkWithDots href="/search" className="text-sm underline md:hidden">
             Search
-          </Link>
+          </LinkWithDots>
 
+          {/* Cart + Savings beside it */}
           <CartBadge />
+
+          <LinkWithDots href="/savings" className="text-sm underline">
+            Savings
+          </LinkWithDots>
 
           {!loggedIn ? (
             <>
-              <Link href="/login" className="text-sm underline">Login</Link>
-              <Link href="/signup" className="text-sm underline">Sign up</Link>
+              <LinkWithDots href="/login" className="text-sm underline">
+                Login
+              </LinkWithDots>
+              <LinkWithDots href="/signup" className="text-sm underline">
+                Sign up
+              </LinkWithDots>
             </>
           ) : (
             <>
-              <Link
-                href="/orders"
+              {/* Account badge now goes to /account */}
+              <LinkWithDots
+                href="/account"
                 className="inline-flex items-center gap-2 rounded-full border bg-white px-2 py-1 text-sm"
-                title={user?.email ?? "Account"}
               >
                 <span
                   className="grid h-7 w-7 place-items-center rounded-full text-xs font-extrabold text-white"
                   style={{ background: "var(--brand)" }}
+                  title={user?.email ?? "Account"}
                 >
                   {badgeInitial}
                 </span>
                 <span className="hidden sm:inline">Account</span>
-              </Link>
+              </LinkWithDots>
 
-              <Link href="/logout" className="text-sm underline">
+              <LinkWithDots href="/logout" className="text-sm underline">
                 Logout
-              </Link>
+              </LinkWithDots>
             </>
           )}
         </nav>

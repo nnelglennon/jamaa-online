@@ -19,8 +19,9 @@ type ProductRow = {
   name: string;
   brand: string | null;
   price: number;
+  regular_price: number | null;
   availability: Availability;
-  image_url?: string | null;
+  image_url: string | null;
 };
 
 type SubOption = {
@@ -28,6 +29,7 @@ type SubOption = {
   name: string;
   brand: string | null;
   price: number;
+  regular_price: number | null;
   availability: Availability;
   image_url: string | null;
 };
@@ -35,6 +37,22 @@ type SubOption = {
 type SubsResponse = {
   substitutes: { product_id: number; options: SubOption[] }[];
 };
+
+function isPromo(price: number, regular_price: number | null) {
+  return regular_price !== null && Number(regular_price) > Number(price);
+}
+
+function promoAmount(price: number, regular_price: number | null) {
+  if (!isPromo(price, regular_price)) return 0;
+  return Number(regular_price) - Number(price);
+}
+
+function promoPercent(price: number, regular_price: number | null) {
+  if (!isPromo(price, regular_price)) return 0;
+  const reg = Number(regular_price);
+  if (reg <= 0) return 0;
+  return Math.round(((reg - Number(price)) / reg) * 100);
+}
 
 function errorMessage(code: string, item: string) {
   if (code === "out_of_stock") return `Out of stock: ${item || "an item in your cart"}. Choose a substitute or remove it.`;
@@ -57,7 +75,6 @@ export default function CartPage() {
     setItems(getCart().items);
   }, []);
 
-  // Load product details for cart items
   useEffect(() => {
     async function load() {
       if (items.length === 0) return setProducts({});
@@ -78,7 +95,6 @@ export default function CartPage() {
     load();
   }, [items]);
 
-  // Load substitute options for out_of_stock items
   useEffect(() => {
     async function loadSubs() {
       const outIds = items
@@ -140,7 +156,6 @@ export default function CartPage() {
         </Link>
       </div>
 
-      {/* Checkout error banner (from failed place_order_v1) */}
       {checkoutError && (
         <div className="mt-4 rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-900">
           <div className="font-extrabold">Checkout issue</div>
@@ -148,7 +163,6 @@ export default function CartPage() {
         </div>
       )}
 
-      {/* Naivas-style warning */}
       <div className="mt-4 rounded-2xl border bg-amber-50 p-4 text-sm text-amber-900">
         <div className="font-extrabold">Availability notice</div>
         <div className="mt-1">
@@ -169,6 +183,8 @@ export default function CartPage() {
               const availability = p?.availability ?? "out_of_stock";
               const out = availability === "out_of_stock";
 
+              const promo = p ? isPromo(p.price, p.regular_price) : false;
+
               return (
                 <div key={i.productId} className="rounded-2xl border bg-white p-4 shadow-sm">
                   <div className="flex items-start justify-between gap-3">
@@ -178,11 +194,34 @@ export default function CartPage() {
                       </div>
                       <div className="mt-1 text-xs text-slate-600">{p?.brand ?? ""}</div>
 
-                      <div className="mt-2 text-sm font-extrabold">
-                        {p ? `KES ${Number(p.price).toFixed(2)}` : "Loading…"}
-                      </div>
+                      {/* Pricing */}
+                      {p ? (
+                        promo ? (
+                          <div className="mt-2">
+                            <div className="text-sm font-extrabold text-blue-700">
+                              KES {Number(p.price).toFixed(2)}
+                            </div>
+                            <div className="text-xs font-normal text-slate-600 line-through">
+                              KES {Number(p.regular_price).toFixed(2)}
+                            </div>
+                            <div className="mt-1 text-xs text-slate-600">
+                              Discount:{" "}
+                              <b className="text-slate-900">
+                                Save KES {promoAmount(p.price, p.regular_price).toFixed(2)} (
+                                {promoPercent(p.price, p.regular_price)}% off)
+                              </b>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="mt-2 text-sm font-extrabold">
+                            KES {Number(p.price).toFixed(2)}
+                          </div>
+                        )
+                      ) : (
+                        <div className="mt-2 text-sm font-extrabold">Loading…</div>
+                      )}
 
-                      <div className="mt-1 text-xs text-slate-600">
+                      <div className="mt-2 text-xs text-slate-600">
                         Availability:{" "}
                         <b className={out ? "text-rose-700" : "text-slate-900"}>
                           {availability.replaceAll("_", " ")}
@@ -217,7 +256,6 @@ export default function CartPage() {
                     </div>
                   </div>
 
-                  {/* Substitute section */}
                   {out && (
                     <div className="mt-4 rounded-xl border bg-slate-50 p-3">
                       <div className="text-sm font-extrabold" style={{ color: "var(--brand)" }}>

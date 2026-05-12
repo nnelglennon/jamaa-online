@@ -21,6 +21,14 @@ async function requireAdmin() {
   return supabase;
 }
 
+function toNullableNumber(v: FormDataEntryValue | null): number | null {
+  if (v === null) return null;
+  const s = String(v).trim();
+  if (!s) return null;
+  const n = Number(s);
+  return Number.isFinite(n) ? n : null;
+}
+
 export async function createProduct(formData: FormData) {
   const supabase = await requireAdmin();
 
@@ -30,17 +38,26 @@ export async function createProduct(formData: FormData) {
   const brand = String(formData.get("brand") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim();
   const image_url = String(formData.get("image_url") ?? "").trim();
-  const price = Number(formData.get("price") ?? 0);
 
-  if (!sku || !name || !Number.isFinite(price) || price < 0) {
+  const price = toNullableNumber(formData.get("price"));
+  const regular_price = toNullableNumber(formData.get("regular_price"));
+
+  if (!sku || !name || price === null || price < 0) {
     throw new Error("Missing/invalid sku, name, or price");
+  }
+
+  // Optional guard: regular price should be >= price if present
+  if (regular_price !== null && regular_price < price) {
+    throw new Error("regular_price must be >= price (or empty)");
   }
 
   let category_id: number | null = null;
 
   if (category) {
-    // upsert category then lookup id
-    const { error: upErr } = await supabase.from("categories").upsert([{ name: category }], { onConflict: "name" });
+    const { error: upErr } = await supabase
+      .from("categories")
+      .upsert([{ name: category }], { onConflict: "name" });
+
     if (upErr) throw new Error(upErr.message);
 
     const { data: catRow, error: cErr } = await supabase
@@ -53,17 +70,24 @@ export async function createProduct(formData: FormData) {
     category_id = Number(catRow.id);
   }
 
-  // Upsert product by sku
-  const { error: pErr } = await supabase.from("products").upsert([{
-    category_id,
-    sku,
-    name,
-    brand: brand || null,
-    description: description || null,
-    price,
-    image_url: image_url || null,
-    active: true,
-  }], { onConflict: "sku" });
+  const { error: pErr } = await supabase
+    .from("products")
+    .upsert(
+      [
+        {
+          category_id,
+          sku,
+          name,
+          brand: brand || null,
+          description: description || null,
+          price,
+          regular_price,
+          image_url: image_url || null,
+          active: true,
+        },
+      ],
+      { onConflict: "sku" }
+    );
 
   if (pErr) throw new Error(pErr.message);
 

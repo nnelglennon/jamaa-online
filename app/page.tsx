@@ -35,7 +35,6 @@ export default async function HomePage({
 
   const cats = (categories ?? []) as Category[];
 
-  // IMPORTANT: use named args matching your function signature
   const { data: products, error } = await supabase.rpc("search_products_v2", {
     in_branch_id: branchId,
     in_category_id: categoryFilter,
@@ -48,31 +47,27 @@ export default async function HomePage({
 
   return (
     <div>
-      {/* Page header row */}
       <div className="flex items-end justify-between gap-3">
         <div>
           <h1 className="text-lg font-extrabold" style={{ color: "var(--brand)" }}>
             Shop
           </h1>
           <p className="mt-1 text-sm text-slate-600">
-            Delivery location affects availability.
+            Browse products by department.
           </p>
         </div>
 
-        {/* Mobile-only categories drawer button */}
         <div className="md:hidden">
           <CategoriesDrawer categories={cats} activeId={categoryFilter} />
         </div>
       </div>
 
-      {/* Layout: sidebar on desktop, grid on right */}
       <div className="mt-4 grid gap-4 md:grid-cols-[260px_1fr]">
         <div className="hidden md:block">
           <CategoriesSidebar categories={cats} activeId={categoryFilter} />
         </div>
 
         <div>
-          {/* Chips only on mobile (desktop already has sidebar) */}
           <div className="md:hidden">
             <Departments categories={cats} activeId={categoryFilter} />
           </div>
